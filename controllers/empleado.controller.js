@@ -1,26 +1,28 @@
-import Client from '../models/models.cliente.js';
+import Employees from '../models/models.empleados.js';
 
-export const CreateCLient = async (req, res) => {
+export const creatEmployees = async (req, res) => {
     try {
-        const { name, email, phone, type, history } = req.body;
-        if (!name || !email || !phone || !type) {
+        const { name, post, salary, email, phone, proyectAsing } = req.body;
+        if (!name || !post || !salary || !email || !phone) {
             return res.status(400).json({
                 status: 'fail',
-                message: "error: los campo no pueden estar vacio"
+                message: 'error campos no pueden estar vacios'
             })
         }
-        if (isNaN(phone) || phone <= 0 || phone === "") {
+        if (isNaN(salary) || salary <= 0) {
             return res.status(400).json({
                 status: 'fail',
-                message: "error valor invalido ,el valor ingresado debe ser numerico"
+                message: 'error lo campos deben ser numericos mayores a cero'
             })
         }
-        if (type !== 'persona natural' && type !== 'empresa') {
+
+        if (isNaN(phone)) {
             return res.status(400).json({
                 status: 'fail',
-                message: "error los valor ingresado es invalido"
+                message: 'error lo campos deben ser numericos mayores a cero'
             })
         }
+
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             return res.status(400).json({
@@ -28,28 +30,34 @@ export const CreateCLient = async (req, res) => {
                 message: "El correo ingresado no es válido"
             });
         }
-        const existe = await Client.findOne({ email });
+
+        const existe = await Employees.findOne({ email });
         if (existe) {
             return res.status(409).json({
                 status: 'fail',
-                message: "Ya existe un cliente con ese correo"
+                message: "Ya existe un empleado con ese correo"
             });
         }
-
-
-        const nuevoCLiente = {
+        if (!['ingeniero', 'maestro de obra', 'obrero'].includes(post)) {
+            return res.status(400).json({
+                status: 'fail',
+                message: 'opcion invalida'
+            })
+        }
+        const nuevoEmpleado = {
             name,
+            post,
+            salary,
             email,
             phone,
-            type,
-            history: history || false
+            proyectAsing
         }
 
-        const cliente = await Client.create(nuevoCLiente)
-        return res.status(201).json({
+        const empleado = await Employees.create(nuevoEmpleado);
+        res.status(201).json({
             status: 'success',
-            message: `${cliente.name} registrado con exito`,
-            data: cliente
+            message: `${empleado.name} usuario creado con exito:`,
+            data: { empleado }
         })
     } catch (error) {
         return res.status(500).json({
@@ -59,18 +67,15 @@ export const CreateCLient = async (req, res) => {
     }
 }
 
-export const getAllClients = async (req, res) => {
+export const getAllEmployees = async (req, res) => {
     try {
-        const clientes = await Client.find();
+        const emplados = await Employees.find();
         return res.status(200).json({
             status: 'success',
-            message: "Lista de clientes obtenida correctamente",
-            result: clientes.length,
-            data: {
-                clientes
-            }
+            message: 'lista de empleados obtenida correctamente',
+            result: emplados.length,
+            data: { clientes }
         })
-
     } catch (error) {
         return res.status(500).json({
             status: 'fail',
@@ -88,50 +93,47 @@ export const getOneClient = async (req, res) => {
                 message: 'el campo es invalido'
             })
         }
-        const cliente = await Client.findById(id);
-        if (!cliente) {
+        const empleado = await Employees.findById(id);
+        if (!empleado) {
             return res.status(404).json({
                 status: 'fail',
-                message: "cliente no encontrado por ese ID"
+                message: 'empleado no encontrado con ese ID'
             })
         }
         return res.status(200).json({
             status: 'success',
-            message: 'cliente encontrado con exito',
-            data: { cliente }
+            message: 'empleado encontrado con exito',
+            data: { empleado }
         })
     } catch (error) {
-        return res.status(500).json({
-            status: 'fail',
-            message: error.message
-        })
+
     }
 }
 
-export const updateClient = async (req, res) => {
+export const updateEmployees = async (req, res) => {
     try {
         const { id } = req.params;
         if (!id) {
             return res.status(400).json({
                 status: 'fail',
-                message: 'cliente no encontrado con ese id',
+                message: 'empleado no encontrado con ese id',
             })
         }
-        const cliente = await Client.findByIdAndUpdate(id, req.body, {
+        const empleado = await Employees.findByIdAndUpdate(id, req.body, {
             new: true,
             runValidators: true
         })
 
-        if (!cliente) {
+        if (!empleado) {
             return res.status(404).json({
                 status: 'fail',
-                message: 'cliente no exite'
+                message: 'empleado no exite'
             })
         }
         return res.status(200).json({
             status: 'success',
             data: {
-                cliente
+                empleado
             }
         });
 
@@ -143,14 +145,14 @@ export const updateClient = async (req, res) => {
     }
 }
 
-export const deleteClient = async (req, res) => {
+export const deleteEmployees = async (req, res) => {
     try {
         const { id } = req.params;
-        const cliente = await Client.findByIdAndDelete(id);
-        if (!cliente) {
+        const empleado = await Employees.findByIdAndDelete(id);
+        if (!empleado) {
             return res.status(404).json({
                 status: 'fail',
-                mensaje: "no se encontro cliente con ese ID"
+                mensaje: "no se encontro empleado con ese ID"
             });
         }
         res.status(204).json({
