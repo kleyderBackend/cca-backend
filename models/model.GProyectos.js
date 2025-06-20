@@ -14,8 +14,6 @@ const ProjectSchemas = mongoose.Schema({
         ref: 'Material',
         required: true
     }]
-
-
 })
 
 const Project = mongoose.model('Project', ProjectSchemas);
