@@ -9,18 +9,17 @@ export const creatEmployees = async (req, res) => {
                 message: 'error campos no pueden estar vacios'
             })
         }
-        if (isNaN(salary) || salary <= 0) {
+        if (isNaN(salary) || Number(salary) <= 0) {
             return res.status(400).json({
                 status: 'fail',
-                message: 'error lo campos deben ser numericos mayores a cero'
+                message: 'Los campos numéricos deben ser mayores a cero'
             })
         }
-
-        if (isNaN(phone)) {
+        if (!/^\d+$/.test(phone) || phone.length < 7) {
             return res.status(400).json({
                 status: 'fail',
-                message: 'error lo campos deben ser numericos mayores a cero'
-            })
+                message: 'Número de teléfono no válido'
+            });
         }
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -43,6 +42,12 @@ export const creatEmployees = async (req, res) => {
                 status: 'fail',
                 message: 'opcion invalida'
             })
+        }
+        if (!proyectAsing) {
+            return res.status(400).json({
+                status: 'fail',
+                message: 'Debe asignar un proyecto al empleado'
+            });
         }
         const nuevoEmpleado = {
             name,
@@ -69,12 +74,12 @@ export const creatEmployees = async (req, res) => {
 
 export const getAllEmployees = async (req, res) => {
     try {
-        const emplados = await Employees.find();
+        const empleado = await Employees.find();
         return res.status(200).json({
             status: 'success',
             message: 'lista de empleados obtenida correctamente',
-            result: emplados.length,
-            data: { clientes }
+            result: empleado.length,
+            data: { empleado }
         })
     } catch (error) {
         return res.status(500).json({
@@ -84,7 +89,7 @@ export const getAllEmployees = async (req, res) => {
     }
 }
 
-export const getOneClient = async (req, res) => {
+export const getOneEmployees = async (req, res) => {
     try {
         const { id } = req.params;
         if (!id) {
@@ -106,7 +111,10 @@ export const getOneClient = async (req, res) => {
             data: { empleado }
         })
     } catch (error) {
-
+        res.status(400).json({
+            status: 'fail',
+            message: error.message
+        });
     }
 }
 
@@ -152,10 +160,10 @@ export const deleteEmployees = async (req, res) => {
         if (!empleado) {
             return res.status(404).json({
                 status: 'fail',
-                mensaje: "no se encontro empleado con ese ID"
+                message: "No se encontró un empleado con ese ID"
             });
         }
-        res.status(204).json({
+        res.status(200).json({
             status: 'success',
             data: null
         });
